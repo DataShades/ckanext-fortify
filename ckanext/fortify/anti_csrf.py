@@ -12,7 +12,7 @@ CSRF_ERR = 'CSRF authentication failed. Token missing or invalid.'
 domain = config.get('ckan.fortify.csrf_domain', '')
 
 RAW_RENDER = base.render
-RAW_RENDER_JINJA = base.render_jinja2
+RAW_RENDER_JINJA = base.render
 #RAW_BEFORE = base.BaseController.__before__
 
 """ Used as the cookie name and input field name.
@@ -114,7 +114,7 @@ def create_response_token(response):
         secure_cookies = False
     response.set_cookie(TOKEN_FRESHNESS_COOKIE_NAME, '1', max_age=600, secure=secure_cookies, httponly=True)
     response.set_cookie(TOKEN_FIELD_NAME, token, secure=secure_cookies, httponly=True)
-    
+
     return token
 
 
@@ -129,7 +129,7 @@ def after_request_function(response):
     # direct_passthrough is set when a file is being downloaded, we do not need to apply a token for file downloads
     if response.direct_passthrough == False and 'text/html' in resp.headers.get('Content-type', ''):
         # Workaround for config page
-        # config_option_update is trying to update token so we need to skip applying the token 
+        # config_option_update is trying to update token so we need to skip applying the token
         # to this form
         # TODO: Fix me!
         if request.endpoint and request.endpoint in ('admin.config'):
