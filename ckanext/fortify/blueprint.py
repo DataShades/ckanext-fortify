@@ -134,6 +134,7 @@ if asbool(config.get('ckan.fortify.force_html_resource_downloads', False)):
         It is a exact copy so will need to be checked and updated if necessary on any CKAN upgrades
         There are a few modifications to force HTML files to be downloaded as an attachment
         """
+        from ckan.lib import signals
         context = {
             u'model': model,
             u'session': model.Session,
@@ -151,12 +152,13 @@ if asbool(config.get('ckan.fortify.force_html_resource_downloads', False)):
             upload = uploader.get_resource_uploader(rsc)
             filepath = upload.get_path(rsc[u'id'])
             # Fortify updates begin
+            signals.resource_download.send(resource_id)
             if upload.mimetype == 'text/html':
                 # Set as_attachment to force download
                 # This will set the header headers.add('Content-Disposition', 'attachment', filename=attachment_filename)
                 return flask.send_file(filepath, mimetype=upload.mimetype, as_attachment=True, attachment_filename=filename)
             else:
-                return flask.send_file(filepath)
+                return flask.send_file(filepath, download_name=filename)
             # Fortify updates end
         elif u'url' not in rsc:
             return abort(404, _(u'No download is available'))
